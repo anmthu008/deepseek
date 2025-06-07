@@ -1,5 +1,13 @@
 // DeepSeek Web应用主JavaScript
 document.addEventListener('DOMContentLoaded', function() {
+    // Global Debug Flag
+    const JS_DEBUG_MODE = window.deepseekConfig && window.deepseekConfig.debug;
+
+    if (JS_DEBUG_MODE) {
+        console.log('DeepSeek App Initializing in Debug Mode');
+        console.log('Initial Config:', window.deepseekConfig);
+    }
+
     // DOM元素
     const sidebar = document.getElementById('sidebar');
     const toggleSidebarBtn = document.getElementById('toggle-sidebar');
@@ -48,11 +56,30 @@ document.addEventListener('DOMContentLoaded', function() {
     let abortController = null;
     
     // 设置默认参数（从后端配置获取）
+    // Helper function to safely get config values
+    const getConfigValue = (path, defaultValue) => {
+        if (!window.deepseekConfig) { // Check if deepseekConfig itself is defined
+            if (JS_DEBUG_MODE) console.warn(`window.deepseekConfig is undefined. Using default for ${path}`);
+            return defaultValue;
+        }
+        const keys = path.split('.');
+        let value = window.deepseekConfig;
+        for (const key of keys) {
+            if (value && typeof value === 'object' && key in value) {
+                value = value[key];
+            } else {
+                if (JS_DEBUG_MODE) console.warn(`Config path ${path} not found. Using default for ${path}.`);
+                return defaultValue;
+            }
+        }
+        return value;
+    };
+
     const defaultSettings = {
         systemPrompt: '',
-        temperature: window.deepseekConfig ? window.deepseekConfig.parameters.temperature : 0.7,
-        maxTokens: window.deepseekConfig ? window.deepseekConfig.parameters.max_tokens : 2000,
-        topP: window.deepseekConfig ? window.deepseekConfig.parameters.top_p : 0.9
+        temperature: getConfigValue('parameters.temperature', 0.7),
+        maxTokens: getConfigValue('parameters.max_tokens', 2000),
+        topP: getConfigValue('parameters.top_p', 0.9)
     };
     
     // 从localStorage加载用户设置

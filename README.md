@@ -1,51 +1,50 @@
-# DeepSeek 前端ui
-一个高度还原的DeepSeek前端界面克隆项目，通过自建API代理实现DeepSeek模型的调用。
+# DeepSeek Frontend UI
+A highly accurate clone of the DeepSeek frontend interface, implemented by calling the DeepSeek model through a self-built API proxy.
 
+[Demo Link](http://deepseek.lzx1.top)
 
-[演示地址](http://deepseek.lzx1.top)
+## Project Introduction
 
-## 项目简介
+This project aims to replicate DeepSeek's frontend interactive interface, achieving seamless communication with the DeepSeek large language model through a PHP backend proxy layer. This provides developers and users with a familiar DeepSeek interface experience, while allowing you to use your own API key to access the DeepSeek model.
 
-本项目旨在复刻DeepSeek的前端交互界面，通过PHP后端代理层实现与DeepSeek大语言模型的无缝通信。这为开发者和用户提供了一个熟悉的DeepSeek界面体验，同时让您可以使用自己的API密钥访问DeepSeek模型。
+## Technology Stack
 
-## 技术架构
+- **Frontend**: User interface implemented with pure HTML, CSS, JavaScript
+- **Backend**: API proxy layer implemented in PHP, responsible for handling communication with the DeepSeek API
+- **Configuration**: Simple PHP configuration file, no complex environment setup required
 
-- **前端**: 纯HTML、CSS、JavaScript实现的用户界面
-- **后端**: PHP实现的API代理层，负责处理与DeepSeek API的通信
-- **配置**: 简单的PHP配置文件，无需复杂的环境设置
+## Core Features
 
-## 核心功能
+- Highly accurate clone of the DeepSeek user interface
+- Complete chat conversation functionality
+- Support for Markdown, code highlighting, and syntax rendering
+- Conversation history management
+- Multi-session parallel support
+- File upload functionality
+- Responsive design, supporting mobile and desktop devices
 
-- 高度还原的DeepSeek用户界面
-- 完整的聊天对话功能
-- 支持Markdown、代码高亮及语法渲染
-- 对话历史管理
-- 多会话并行支持
-- 文件上传功能
-- 响应式设计，支持移动端和桌面端
+## Installation Guide
 
-## 安装指南
+### Prerequisites
 
-### 前置条件
+- PHP 7.4+
+- Web server (Apache/Nginx)
+- DeepSeek API Key
 
-- PHP 7.4+ 
-- Web服务器 (Apache/Nginx)
-- DeepSeek API密钥
+### Installation Steps
 
-### 安装步骤
-
-1. 克隆或下载代码库到您的Web服务器目录
+1. Clone or download the repository to your web server directory
 
 ```bash
 git clone https://github.com/yourusername/deepseek-frontend-clone.git
-# 或直接下载ZIP文件并解压到网站根目录
+# Or download the ZIP file directly and unzip it to the website root directory
 ```
 
-2. 配置Web服务器
+2. Configure your web server
 
-确保您的Web服务器指向项目的根目录，并且PHP已正确配置。
+Ensure your web server points to the project's root directory and that PHP is configured correctly.
 
-对于Apache，可以使用以下.htaccess配置:
+For Apache, you can use the following .htaccess configuration:
 
 ```apache
 <IfModule mod_rewrite.c>
@@ -58,159 +57,158 @@ git clone https://github.com/yourusername/deepseek-frontend-clone.git
 </IfModule>
 ```
 
-3. 配置API密钥
+3. Configure API Key
 
-编辑`config.php`文件，更新以下配置：
+Edit the `config.php` file and update the following configuration:
 
 ```php
-// API配置
+// API Configuration
 'api' => [
-    'key' => 'YOUR_DEEPSEEK_API_KEY_HERE', // 替换为您的API密钥
-    'url' => 'https://api.deepseek.top/v1/chat/completions', // DeepSeek API地址
+    'key' => 'YOUR_DEEPSEEK_API_KEY_HERE', // Replace with your API key
+    'url' => 'https://api.deepseek.top/v1/chat/completions', // DeepSeek API endpoint
     'models' => [
-        'default' => 'deepseek-v3', // 默认模型
-        'thinking' => 'deepseek-r1' // 深度思考模型
+        'default' => 'deepseek-v3', // Default model
+        'thinking' => 'deepseek-r1' // Deep thinking model
     ],
-    // 其他参数...
+    // Other parameters...
 ],
 ```
-[获取官网apikey](https://platform.deepseek.com/)
+[Get official API key](https://platform.deepseek.com/)
 
-[更便宜高效的中转api站](https://api.lzx1.top)
+[Cheaper and more efficient relay API station](https://api.lzx1.top)
 
-4. 目录权限
+4. Directory Permissions
 
-确保上传目录和对话历史目录具有正确的写入权限：
+Ensure the upload directory and conversation history directory have correct write permissions:
 
 ```bash
 chmod 755 uploads
 chmod 755 conversations
 ```
 
-5. 访问您的网站
+5. Access Your Website
 
-通过浏览器访问项目部署的URL，即可使用DeepSeek克隆前端。
+Access the deployed project URL through your browser to use the DeepSeek clone frontend.
 
-## 配置说明
+## Configuration Details
 
-项目的所有配置都集中在`config.php`文件中，主要包括以下几个部分：
+All project configurations are centralized in the `config.php` file, mainly including the following parts:
 
-### API配置
+### API Configuration
 
 ```php
 'api' => [
-    'key' => 'YOUR_API_KEY', // DeepSeek API密钥
-    'url' => 'https://api.deepseek.top/v1/chat/completions', // API地址
+    'key' => 'YOUR_API_KEY', // DeepSeek API Key
+    'url' => 'https://api.deepseek.top/v1/chat/completions', // API endpoint
     'models' => [
-        'default' => 'deepseek-v3', // 默认模型
-        'thinking' => 'deepseek-r1' // 深度思考模型
+        'default' => 'deepseek-v3', // Default model
+        'thinking' => 'deepseek-r1' // Deep thinking model
     ],
     'parameters' => [
-        'temperature' => 0.7,  // 默认温度
-        'max_tokens' => 2000,  // 默认最大token数
-        'top_p' => 0.9,        // 默认top_p值
+        'temperature' => 0.7,  // Default temperature
+        'max_tokens' => 2000,  // Default maximum tokens
+        'top_p' => 0.9,        // Default top_p value
     ]
 ],
 ```
 
-### 文件上传配置
+### File Upload Configuration
 
 ```php
 'upload' => [
-    'max_file_size' => 100 * 1024 * 1024, // 最大文件大小 (100MB)
+    'max_file_size' => 100 * 1024 * 1024, // Maximum file size (100MB)
     'allowed_types' => [
-        // 允许的文件类型...
+        // Allowed file types...
     ],
-    'directory' => __DIR__ . '/uploads', // 上传目录
+    'directory' => __DIR__ . '/uploads', // Upload directory
 ],
 ```
 
-### 对话记录配置
+### Conversation History Configuration
 
 ```php
 'conversation' => [
-    'directory' => __DIR__ . '/conversations', // 对话历史存储目录
-    'max_history' => 100 // 每个用户存储的最大对话数
+    'directory' => __DIR__ . '/conversations', // Conversation history storage directory
+    'max_history' => 100 // Maximum number of conversations stored per user
 ],
 ```
 
-### 系统配置
+### System Configuration
 
 ```php
 'system' => [
-    'debug' => false, // 调试模式
-    'timezone' => 'Asia/Shanghai', // 时区设置
-    'version' => '1.0.0', // 应用版本
+    'debug' => false, // Debug mode
+    'timezone' => 'Asia/Shanghai', // Timezone setting
+    'version' => '1.0.0', // Application version
 ],
 ```
 
-## 自定义模型
+## Custom Models
 
-您可以在配置文件中自定义可用的DeepSeek模型：
+You can customize the available DeepSeek models in the configuration file:
 
 ```php
 'models' => [
-    'default' => 'deepseek-v3', // 默认的对话模型
-    'thinking' => 'deepseek-r1', // 深度思考模型
-    'custom' => 'your-custom-model-id' // 添加自定义模型
+    'default' => 'deepseek-v3', // Default conversation model
+    'thinking' => 'deepseek-r1', // Deep thinking model
+    'custom' => 'your-custom-model-id' // Add custom model
 ],
 ```
 
-## 项目结构
+## Project Structure
 
 ```
 deepseek-frontend-clone/
-├── assets/            # 静态资源 (CSS, JS, 图片)
-│   ├── css/           # 样式文件
-│   ├── js/            # JavaScript文件
-│   └── images/        # 图片资源
-├── includes/          # PHP包含文件
-│   ├── api.php        # API处理逻辑
-│   └── functions.php  # 辅助函数
-├── uploads/           # 文件上传目录
-├── conversations/     # 对话历史存储目录
-├── config.php         # 配置文件
-├── index.php          # 主入口文件
-└── README.md          # 项目文档
+├── assets/            # Static assets (CSS, JS, Images)
+│   ├── css/           # Style files
+│   ├── js/            # JavaScript files
+│   └── images/        # Image resources
+├── uploads/           # File upload directory
+├── conversations/     # Conversation history storage directory
+├── api.php            # API handling logic
+├── config.php         # Configuration file
+├── file_handler.php   # File handling logic
+├── index.php          # Main entry point
+└── README.md          # Project documentation
 ```
 
-## 常见问题
+## Frequently Asked Questions
 
-### API密钥无效
+### API Key Invalid
 
-确保您在`config.php`中配置了正确的DeepSeek API密钥，并且该密钥具有足够的权限和余额。
+Ensure you have configured the correct DeepSeek API key in `config.php`, and that the key has sufficient permissions and balance.
 
-### 上传文件失败
+### File Upload Failed
 
-检查`uploads`目录的写入权限，并确保PHP配置允许文件上传且最大文件大小限制适当。
+Check the write permissions for the `uploads` directory, and ensure that your PHP configuration allows file uploads and that the maximum file size limit is appropriate.
 
-### 如何更换API提供商
+### How to Change API Provider
 
-如果您想使用其他AI服务提供商的API，只需修改`config.php`中的API URL和相应参数格式。可能需要在`includes/api.php`中调整请求处理逻辑。
+If you want to use an API from another AI service provider, simply modify the API URL and corresponding parameter format in `config.php`. You may also need to adjust the request handling logic in `api.php`.
 
-## 贡献指南
+## Contribution Guide
 
-欢迎对本项目提出改进建议和贡献代码:
+Suggestions for improvements and code contributions to this project are welcome:
 
-1. Fork本项目
-2. 创建您的特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交您的更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 创建Pull Request
+1. Fork this project
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a Pull Request
 
-## 许可证
+## License
 
-本项目采用MIT许可证 - 详情请参阅 [LICENSE](LICENSE) 文件
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 免责声明
+## Disclaimer
 
-本项目仅用于学习和研究目的，不隶属于DeepSeek官方。使用本项目时请遵守相关API服务的使用条款和条件。使用者需确保拥有合法的API访问权限。
+This project is for learning and research purposes only and is not affiliated with the official DeepSeek. When using this project, please comply with the terms and conditions of the relevant API service. Users must ensure they have legal API access permissions.
 
-## 鸣谢
+## Acknowledgements
 
-- [DeepSeek](https://deepseek.com/) - 原始界面设计灵感
-- 所有贡献者和用户
+- [DeepSeek](https://deepseek.com/) - Original interface design inspiration
+- All contributors and users
 
 ---
 
-**注意**: 在部署和使用过程中，请确保您的API密钥安全，不要将包含真实API密钥的配置文件提交到公共代码库中。
+**Note**: During deployment and use, please ensure your API key is secure. Do not commit configuration files containing real API keys to public repositories.
