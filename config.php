@@ -13,7 +13,7 @@ if (!defined('DEEPSEEK_ACCESS')) {
 return [
     // API配置
     'api' => [
-        'key' => apikey', // 替换为实际的DeepSeek API密钥
+        'key' => 'sk-148a849ede56455ab2602db661ea9f42', // 替换为实际的DeepSeek API密钥
         'url' => 'https://api.deepseek.com/v1/chat/completions', // DeepSeek API端点
         'models' => [
             'default' => 'deepseek-chat', // 默认模型
