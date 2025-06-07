@@ -1,25 +1,25 @@
 <?php
 
 
-// 定义应用访问标识
+// Define application access identifier
 define('DEEPSEEK_ACCESS', true);
 
-// 处理API请求
+// Handle API requests
 if (isset($_GET['api'])) {
     require_once __DIR__ . '/api.php';
     exit;
 }
 
-// 处理文件上传
+// Handle file uploads
 if (isset($_FILES['files'])) {
     require_once __DIR__ . '/api.php';
     exit;
 }
 
-// 加载配置
+// Load configuration
 $config = require_once __DIR__ . '/config.php';
 
-// 准备传递给前端的安全配置
+// Prepare secure configuration to pass to the frontend
 $frontendConfig = [
     'models' => $config['api']['models'],
     'parameters' => $config['api']['parameters'],
@@ -27,10 +27,10 @@ $frontendConfig = [
     'debug' => $config['system']['debug']
 ];
 
-// 输出HTML页面
+// Output HTML page
 ?>
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en"> <!-- Changed lang to en -->
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -39,7 +39,7 @@ $frontendConfig = [
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="css/family.css" rel="stylesheet">
     <script>
-        // 传递安全配置给前端
+        // Pass secure configuration to the frontend
         window.deepseekConfig = <?php echo json_encode($frontendConfig); ?>;
     </script>
 </head>
@@ -57,26 +57,26 @@ $frontendConfig = [
             </div>
             <button class="new-chat-btn" id="new-chat-btn">
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M9.10999 27C8.92999 27 8.76001 26.96 8.60001 26.9C8.43001 26.83 8.29 26.74 8.16 26.61C8.03 26.49 7.94 26.3499 7.87 26.1899C7.79999 26.0299 7.76001 25.8599 7.76001 25.6899L7.73001 23.04C7.34001 22.98 6.95001 22.8799 6.57001 22.7599C6.19001 22.6299 5.83001 22.48 5.48001 22.29C5.13001 22.1 4.79999 21.88 4.48999 21.63C4.17999 21.39 3.89 21.1199 3.63 20.82C3.37 20.52 3.13999 20.21 2.92999 19.87C2.72999 19.53 2.56001 19.18 2.42001 18.82C2.28001 18.45 2.17001 18.07 2.10001 17.69C2.03001 17.3 2 16.92 2 16.53V9.46995C2 9.03995 2.04 8.61995 2.12 8.19995C2.21 7.77995 2.34 7.36995 2.5 6.96995C2.67 6.57995 2.88 6.19995 3.12 5.84995C3.36 5.48995 3.64001 5.15995 3.95001 4.85995C4.26001 4.55995 4.59999 4.28995 4.95999 4.04995C5.32999 3.80995 5.70999 3.60995 6.10999 3.44995C6.51999 3.27995 6.94 3.15995 7.37 3.07995C7.79999 2.98995 8.23001 2.94995 8.67001 2.94995H13.3C13.46 2.94995 13.61 2.97995 13.76 3.03995C13.9 3.09995 14.03 3.17995 14.14 3.28995C14.25 3.39995 14.33 3.51995 14.39 3.65995C14.45 3.79995 14.48 3.94995 14.48 4.09995C14.48 4.25995 14.45 4.39995 14.39 4.54995C14.33 4.68995 14.25 4.80995 14.14 4.91995C14.03 5.02995 13.9 5.10995 13.76 5.16995C13.61 5.22995 13.46 5.25995 13.3 5.25995H8.67001C8.38001 5.25995 8.09999 5.27995 7.82999 5.33995C7.54999 5.38995 7.27999 5.46995 7.01999 5.57995C6.75999 5.67995 6.50999 5.80995 6.26999 5.96995C6.03999 6.11995 5.82 6.29995 5.62 6.48995C5.42 6.68995 5.23999 6.89995 5.07999 7.12995C4.92999 7.35995 4.78999 7.59995 4.67999 7.85995C4.57999 8.10995 4.49 8.37995 4.44 8.64995C4.38 8.91995 4.35999 9.18995 4.35999 9.46995V16.53C4.35999 16.81 4.38 17.08 4.44 17.36C4.5 17.63 4.58 17.9 4.69 18.16C4.8 18.42 4.93 18.67 5.09 18.9C5.25 19.13 5.43001 19.3499 5.64001 19.5499C5.84001 19.75 6.05999 19.92 6.29999 20.08C6.53999 20.24 6.79 20.37 7.06 20.47C7.32 20.58 7.6 20.66 7.88 20.72C8.16001 20.77 8.44001 20.7999 8.73001 20.7999C8.91001 20.7999 9.08 20.83 9.25 20.9C9.41 20.97 9.55999 21.0599 9.67999 21.18C9.80999 21.3099 9.91001 21.45 9.98001 21.61C10.05 21.77 10.08 21.94 10.09 22.11L10.1 23.74L13.08 21.61C13.84 21.07 14.69 20.7999 15.63 20.7999H19.32C19.61 20.7999 19.89 20.77 20.16 20.72C20.44 20.67 20.71 20.59 20.97 20.4799C21.23 20.3699 21.48 20.24 21.72 20.09C21.95 19.94 22.17 19.76 22.37 19.57C22.57 19.3699 22.75 19.16 22.91 18.93C23.07 18.7 23.2 18.46 23.31 18.2C23.41 17.95 23.5 17.68 23.55 17.41C23.61 17.14 23.63 16.87 23.63 16.59V12.94C23.63 12.79 23.66 12.64 23.72 12.5C23.78 12.36 23.87 12.23 23.98 12.13C24.09 12.02 24.22 11.93 24.36 11.88C24.51 11.82 24.66 11.79 24.82 11.79C24.97 11.79 25.12 11.82 25.27 11.88C25.41 11.93 25.54 12.02 25.65 12.13C25.76 12.23 25.85 12.36 25.91 12.5C25.97 12.64 26 12.79 26 12.94V16.59C26 17.02 25.95 17.44 25.87 17.86C25.78 18.28 25.66 18.69 25.49 19.08C25.32 19.48 25.11 19.8499 24.87 20.2099C24.63 20.57 24.35 20.9 24.04 21.2C23.73 21.5 23.39 21.7699 23.03 22.0099C22.67 22.2499 22.28 22.45 21.88 22.61C21.47 22.77 21.06 22.9 20.63 22.9799C20.2 23.07 19.76 23.11 19.32 23.11H16.4C15.47 23.11 14.62 23.3799 13.86 23.9199L9.91 26.74C9.67 26.91 9.39999 27 9.10999 27Z" fill="currentColor"></path><path d="M24.6805 5.14453H18.1874C17.5505 5.14453 17.0342 5.66086 17.0342 6.29778C17.0342 6.9347 17.5505 7.45102 18.1874 7.45102H24.6805C25.3175 7.45102 25.8338 6.9347 25.8338 6.29778C25.8338 5.66086 25.3175 5.14453 24.6805 5.14453Z" fill="currentColor"></path><path d="M22.6137 3.1804C22.6137 2.52848 22.0852 2 21.4333 2C20.7814 2 20.2529 2.52848 20.2529 3.1804V9.4168C20.2529 10.0687 20.7814 10.5972 21.4333 10.5972C22.0852 10.5972 22.6137 10.0687 22.6137 9.4168V3.1804Z" fill="currentColor"></path></svg>
-                开启新对话
+                Start New Chat
             </button>
             
-            <!-- 历史对话列表 -->
+            <!-- Conversation history list -->
             <div class="chat-history" id="chat-history">
-                <!-- 对话记录将在这里动态加载 -->
+                <!-- Conversation records will be dynamically loaded here -->
             </div>
             
-            <!-- 底部菜单 -->
+            <!-- Bottom menu -->
             <div class="sidebar-footer">
                 <div class="sidebar-action-btn" id="settings-btn">
                     <i class="fas fa-cog"></i>
-                    <span>高级设置</span>
+                    <span>Advanced Settings</span>
                     <span class="new-label">NEW</span>
                 </div>
                 <div class="sidebar-action-btn" id="author-info-btn">
                     <div class="user-avatar">
-                        <img src="img/avatar.jpg" alt="用户头像">
+                        <img src="img/avatar.jpg" alt="User Avatar">
                     </div>
-                    <span>作者信息</span>
+                    <span>Author Info</span>
                 </div>
             </div>
         </div>
@@ -99,7 +99,7 @@ $frontendConfig = [
             </div>
             
             <div class="chat-container" id="chat-container">
-                <!-- 欢迎消息 -->
+                <!-- Welcome message -->
                 <div class="welcome-container" id="welcome-container">
                     <div class="welcome-header">
                         <div class="welcome-logo">
@@ -107,84 +107,84 @@ $frontendConfig = [
                                 <path d="M27.501 8.46875C27.249 8.3457 27.1406 8.58008 26.9932 8.69922C26.9434 8.73828 26.9004 8.78906 26.8584 8.83398C26.4902 9.22852 26.0605 9.48633 25.5 9.45508C24.6787 9.41016 23.9785 9.66797 23.3594 10.2969C23.2275 9.52148 22.79 9.05859 22.125 8.76172C21.7764 8.60742 21.4238 8.45312 21.1807 8.11719C21.0098 7.87891 20.9639 7.61328 20.8779 7.35156C20.8242 7.19336 20.7695 7.03125 20.5879 7.00391C20.3906 6.97266 20.3135 7.13867 20.2363 7.27734C19.9258 7.84375 19.8066 8.46875 19.8174 9.10156C19.8447 10.5234 20.4453 11.6562 21.6367 12.4629C21.7725 12.5547 21.8076 12.6484 21.7646 12.7832C21.6836 13.0605 21.5869 13.3301 21.501 13.6074C21.4473 13.7852 21.3662 13.8242 21.1768 13.7461C20.5225 13.4727 19.957 13.0684 19.458 12.5781C18.6104 11.7578 17.8438 10.8516 16.8877 10.1426C16.6631 9.97656 16.4395 9.82227 16.207 9.67578C15.2314 8.72656 16.335 7.94727 16.5898 7.85547C16.8574 7.75977 16.6826 7.42773 15.8193 7.43164C14.957 7.43555 14.167 7.72461 13.1611 8.10938C13.0137 8.16797 12.8594 8.21094 12.7002 8.24414C11.7871 8.07227 10.8389 8.0332 9.84766 8.14453C7.98242 8.35352 6.49219 9.23633 5.39648 10.7441C4.08105 12.5547 3.77148 14.6133 4.15039 16.7617C4.54883 19.0234 5.70215 20.8984 7.47559 22.3633C9.31348 23.8809 11.4307 24.625 13.8457 24.4824C15.3125 24.3984 16.9463 24.2012 18.7881 22.6406C19.2529 22.8711 19.7402 22.9629 20.5498 23.0332C21.1729 23.0918 21.7725 23.002 22.2373 22.9062C22.9648 22.752 22.9141 22.0781 22.6514 21.9531C20.5186 20.959 20.9863 21.3633 20.5605 21.0371C21.6445 19.752 23.2783 18.418 23.917 14.0977C23.9668 13.7539 23.9238 13.5391 23.917 13.2598C23.9131 13.0918 23.9512 13.0254 24.1445 13.0059C24.6787 12.9453 25.1973 12.7988 25.6738 12.5352C27.0557 11.7793 27.6123 10.5391 27.7441 9.05078C27.7637 8.82422 27.7402 8.58789 27.501 8.46875ZM15.46 21.8613C13.3926 20.2344 12.3906 19.6992 11.9766 19.7227C11.5898 19.7441 11.6592 20.1875 11.7441 20.4766C11.833 20.7617 11.9492 20.959 12.1123 21.209C12.2246 21.375 12.3018 21.623 12 21.8066C11.334 22.2207 10.1768 21.668 10.1221 21.6406C8.77539 20.8477 7.64941 19.7988 6.85547 18.3652C6.08984 16.9844 5.64453 15.5039 5.57129 13.9238C5.55176 13.541 5.66406 13.4062 6.04297 13.3379C6.54199 13.2461 7.05762 13.2266 7.55664 13.2988C9.66602 13.6074 11.4619 14.5527 12.9668 16.0469C13.8262 16.9004 14.4766 17.918 15.1465 18.9121C15.8584 19.9688 16.625 20.9746 17.6006 21.7988C17.9443 22.0879 18.2197 22.3086 18.4824 22.4707C17.6895 22.5586 16.3652 22.5781 15.46 21.8613ZM16.4502 15.4805C16.4502 15.3105 16.5859 15.1758 16.7568 15.1758C16.7949 15.1758 16.8301 15.1836 16.8613 15.1953C16.9033 15.2109 16.9424 15.2344 16.9727 15.2695C17.0273 15.3223 17.0586 15.4004 17.0586 15.4805C17.0586 15.6504 16.9229 15.7852 16.7529 15.7852C16.582 15.7852 16.4502 15.6504 16.4502 15.4805ZM19.5273 17.0625C19.3301 17.1426 19.1328 17.2129 18.9434 17.2207C18.6494 17.2344 18.3281 17.1152 18.1533 16.9688C17.8828 16.7422 17.6895 16.6152 17.6074 16.2168C17.5732 16.0469 17.5928 15.7852 17.623 15.6348C17.6934 15.3105 17.6152 15.1035 17.3877 14.9141C17.2012 14.7598 16.9658 14.7188 16.7061 14.7188C16.6094 14.7188 16.5205 14.6758 16.4541 14.6406C16.3457 14.5859 16.2568 14.4512 16.3418 14.2852C16.3691 14.2324 16.501 14.1016 16.5322 14.0781C16.8838 13.877 17.29 13.9434 17.666 14.0938C18.0146 14.2363 18.2773 14.498 18.6562 14.8672C19.0439 15.3145 19.1133 15.4395 19.334 15.7734C19.5078 16.0371 19.667 16.3066 19.7754 16.6152C19.8408 16.8066 19.7559 16.9648 19.5273 17.0625Z" fill="#4D6BFE"/>
                             </svg>
                         </div>
-                        <h1>我是 DeepSeek，很高兴见到你！</h1>
-                        <p>我可以帮你写代码、读文件、写作各种创意内容，请把你的任务交给我吧~</p>
+                        <h1>I am DeepSeek, nice to meet you!</h1>
+                        <p>I can help you write code, read files, write various creative content, please give me your tasks~</p>
                     </div>
                 </div>
                 
-                <!-- 聊天消息将在这里显示 -->
+                <!-- Chat messages will be displayed here -->
                 <div id="chat-messages" class="chat-messages"></div>
             </div>
             
-            <!-- 输入区域 -->
+            <!-- Input area -->
             <div class="chat-input-container">
                 <div class="chat-input-kj">
                 <div class="chat-input-wrapper">
                     
-                    <textarea id="chat-input" class="chat-input" placeholder="给 DeepSeek 发送消息" rows="1"></textarea>
+                    <textarea id="chat-input" class="chat-input" placeholder="Send a message to DeepSeek" rows="1"></textarea>
                     <div class="input-actions">
-                        <button id="upload-btn" class="action-btn" title="上传文件">
+                        <button id="upload-btn" class="action-btn" title="Upload file">
                             <i class="fas fa-paperclip"></i>
                         </button>
-                        <button id="send-btn" class="action-btn send-btn" title="发送" disabled>
+                        <button id="send-btn" class="action-btn send-btn" title="Send" disabled>
                             <i class="fas fa-arrow-up"></i>
                         </button>
                     </div>
                 </div>
                 
                 <div class="chat-tools">
-                    <button id="deep-thinking-btn" class="tool-btn" title="深度思考">
+                    <button id="deep-thinking-btn" class="tool-btn" title="Deep Thinking">
                         <i class="fas fa-brain"></i>
-                        <span>深度思考 (R1)</span>
+                        <span>Deep Thinking (R1)</span>
                     </button>
-                    <button id="web-search-btn" class="tool-btn" title="联网搜索">
+                    <button id="web-search-btn" class="tool-btn" title="Web Search">
                         <i class="fas fa-globe"></i>
-                        <span>联网搜索</span>
+                        <span>Web Search</span>
                     </button>
                 </div>
                 </div>
                 
                 <div class="footer-text">
-                    <p>内容由 AI 生成，请仔细甄别</p>
+                    <p>Content generated by AI, please verify carefully</p>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- 高级设置模态框 -->
+    <!-- Advanced Settings Modal -->
     <div id="settings-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>高级设置</h2>
+                <h2>Advanced Settings</h2>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="settings-section">
-                    <h3>对话设定</h3>
+                    <h3>Conversation Settings</h3>
                     <div class="setting-item">
-                        <label for="system-prompt">系统提示词</label>
-                        <textarea id="system-prompt" rows="4" placeholder="设置AI对话的基本行为和风格..."></textarea>
+                        <label for="system-prompt">System Prompt</label>
+                        <textarea id="system-prompt" rows="4" placeholder="Set the basic behavior and style of the AI conversation..."></textarea>
                     </div>
                 </div>
                 
                 <div class="settings-section">
-                    <h3>模型参数</h3>
+                    <h3>Model Parameters</h3>
                     <div class="setting-item">
-                        <label for="temperature">温度 (Temperature)</label>
+                        <label for="temperature">Temperature</label>
                         <div class="slider-container">
                             <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
                             <span id="temperature-value">0.7</span>
                         </div>
-                        <p class="setting-description">控制输出的随机性，值越高结果越多样，值越低结果越确定</p>
+                        <p class="setting-description">Controls the randomness of the output. Higher values lead to more diverse results, lower values lead to more deterministic results.</p>
                     </div>
                     
                     <div class="setting-item">
-                        <label for="max-tokens">最大Token数量</label>
+                        <label for="max-tokens">Maximum Tokens</label>
                         <div class="slider-container">
                             <input type="range" id="max-tokens" min="100" max="4000" step="100" value="2000">
                             <span id="max-tokens-value">2000</span>
                         </div>
-                        <p class="setting-description">控制生成回复的最大长度</p>
+                        <p class="setting-description">Controls the maximum length of the generated reply.</p>
                     </div>
                     
                     <div class="setting-item">
@@ -193,85 +193,85 @@ $frontendConfig = [
                             <input type="range" id="top-p" min="0" max="1" step="0.05" value="0.9">
                             <span id="top-p-value">0.9</span>
                         </div>
-                        <p class="setting-description">控制词汇选择的多样性</p>
+                        <p class="setting-description">Controls the diversity of word choice.</p>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button id="save-settings" class="primary-btn">保存设置</button>
-                <button class="cancel-btn close-modal">取消</button>
+                <button id="save-settings" class="primary-btn">Save Settings</button>
+                <button class="cancel-btn close-modal">Cancel</button>
             </div>
         </div>
     </div>
     
-    <!-- 作者信息模态框 -->
+    <!-- Author Info Modal -->
     <div id="author-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>作者信息</h2>
+                <h2>Author Info</h2>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="author-profile">
                     <div class="author-avatar">
-                        <img src="img/avatar.jpg" alt="作者头像">
+                        <img src="img/avatar.jpg" alt="Author Avatar">
                     </div>
                     <div class="author-details">
-                        <h3>开发者</h3>
-                        <p>DeepSeek Web版本</p>
-                        <p>版本: <?php echo $config['system']['version']; ?></p>
-                        <p>构建日期: <?php echo date('Y-m-d'); ?></p>
+                        <h3>Developer</h3>
+                        <p>DeepSeek Web Version</p>
+                        <p>Version: <?php echo $config['system']['version']; ?></p>
+                        <p>Build Date: <?php echo date('Y-m-d'); ?></p>
                     </div>
                 </div>
                 <div class="about-section">
-                    <h3>关于此应用</h3>
-                    <p>这是一个基于DeepSeek AI模型的Web应用，支持在浏览器中与先进的AI模型进行交互。</p>
-                    <p>可以进行文本生成、代码编写、文件分析等多种任务。</p>
+                    <h3>About This Application</h3>
+                    <p>This is a web application based on the DeepSeek AI model, supporting interaction with advanced AI models in the browser.</p>
+                    <p>It can perform various tasks such as text generation, code writing, and file analysis.</p>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- 文件上传模态框 -->
+    <!-- File Upload Modal -->
     <div id="upload-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>上传文件</h2>
+                <h2>Upload Files</h2>
                 <button class="close-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="upload-area" id="upload-area">
                     <div class="upload-prompt">
                         <i class="fas fa-cloud-upload-alt"></i>
-                        <p>拖放文件到这里或点击上传</p>
-                        <p class="upload-note">最多 50 个，每个 100 MB，支持各类文档和图片</p>
+                        <p>Drag and drop files here or click to upload</p>
+                        <p class="upload-note">Max 50 files, 100 MB each, supports various documents and images</p>
                     </div>
                     <input type="file" id="file-input" class="file-input" multiple>
                 </div>
                 <div class="upload-file-list" id="upload-file-list"></div>
             </div>
             <div class="modal-footer">
-                <button id="confirm-upload" class="primary-btn">确认上传</button>
-                <button class="cancel-btn close-modal">取消</button>
+                <button id="confirm-upload" class="primary-btn">Confirm Upload</button>
+                <button class="cancel-btn close-modal">Cancel</button>
             </div>
         </div>
     </div>
     
     <input type="file" id="hidden-file-input" style="display: none;" multiple>
     
-    <!-- 消息模板 -->
+    <!-- Message Templates -->
 <template id="thinking-animation-template">
   <div class="message-thinking thinking-animation">
     <span class="loader"></span>
-    <span class="thinking-text">思考中...</span>
-    <span class="thinking-timer">(用时 0 秒)</span>
+    <span class="thinking-text">Thinking...</span>
+    <span class="thinking-timer">(Time spent 0 seconds)</span>
   </div>
 </template>
 
 <template id="user-message-template">
   <div class="message user-message">
     <div class="message-avatar user">
-      <img src="img/avatar.jpg" alt="用户头像">
+      <img src="img/avatar.jpg" alt="User Avatar">
     </div>
     <div class="message-content">
       <div class="message-text"></div>
@@ -290,10 +290,10 @@ $frontendConfig = [
       <div class="message-text"></div>
       <div class="message-actions">
         <button class="message-action-btn copy-message">
-          <i class="fas fa-copy"></i>复制
+          <i class="fas fa-copy"></i>Copy
         </button>
         <button class="message-action-btn regenerate">
-          <i class="fas fa-sync-alt"></i>重新生成
+          <i class="fas fa-sync-alt"></i>Regenerate
         </button>
         <button class="message-action-btn like">
           <i class="far fa-thumbs-up"></i>
@@ -307,10 +307,10 @@ $frontendConfig = [
 </template>
 
 <template id="code-block-template">
-  <pre><div class="code-header"><span></span><button class="copy-btn">复制</button></div><code></code></pre>
+  <pre><div class="code-header"><span></span><button class="copy-btn">Copy</button></div><code></code></pre>
 </template>
 
-<!-- 提示消息容器 -->
+<!-- Toast message container -->
 <div style="z-index:1000" class="toast-container"></div>
     
     <script src="js/app.js"></script>

@@ -1,25 +1,33 @@
 <?php
 /**
- * DeepSeek Web 文件处理模块
- * 负责安全地处理上传和访问文件
+ * DeepSeek Web File Handling Module
+ * Responsible for securely handling uploaded and accessed files
  */
 
-// 防止直接访问
+// Prevent direct access
 if (!defined('DEEPSEEK_ACCESS')) {
     die('Direct access not permitted');
 }
 
 /**
- * 处理文件上传
+ * Handle file uploads
  */
 function handleFileUpload() {
     global $config;
+    $isDebugMode = isset($config['system']['debug']) && $config['system']['debug'] === true;
+
+    if ($isDebugMode) {
+        error_log("handleFileUpload entered.");
+    }
     
     $uploadDir = $config['upload']['directory'] . '/';
     
-    // 确保上传目录存在
+    // Ensure upload directory exists
     if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
+        if (!mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+             error_log("Failed to create upload directory: " . $uploadDir);
+             // Depending on severity, might want to return an error to the user here
+        }
     }
     
     $files = $_FILES['files'];
@@ -33,26 +41,35 @@ function handleFileUpload() {
         $fileError = $files['error'][$i];
         $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
         
-        // 检查上传错误
+        // Check for upload errors
         if ($fileError !== UPLOAD_ERR_OK) {
+            if ($isDebugMode) {
+                error_log("File upload error for '{$fileName}': Error code {$fileError}");
+            }
             continue;
         }
         
-        // 检查文件大小
+        // Check file size
         if ($fileSize > $config['upload']['max_file_size']) {
+            if ($isDebugMode) {
+                error_log("File '{$fileName}' exceeded max size: {$fileSize} bytes.");
+            }
             continue;
         }
         
-        // 检查文件类型
+        // Check file type
         if (!in_array($fileExt, $config['upload']['allowed_types'])) {
+            if ($isDebugMode) {
+                error_log("File '{$fileName}' has disallowed type: {$fileExt}");
+            }
             continue;
         }
         
-        // 生成安全的文件名
+        // Generate a safe filename
         $newFileName = 'uploaded_' . uniqid() . '_' . sanitizeFileName($fileName);
         $uploadFilePath = $uploadDir . $newFileName;
         
-        // 移动上传的文件
+        // Move the uploaded file
         if (move_uploaded_file($fileTmpPath, $uploadFilePath)) {
             $uploadedFiles[] = [
                 'original_name' => $fileName,
@@ -62,10 +79,16 @@ function handleFileUpload() {
                 'url' => './uploads/' . $newFileName,
                 'type' => $fileExt
             ];
+        } else {
+            error_log("Failed to move uploaded file from '{$fileTmpPath}' to '{$uploadFilePath}'.");
         }
     }
     
-    // 返回上传结果
+    if ($isDebugMode) {
+        error_log("handleFileUpload completed. Uploaded files: " . json_encode($uploadedFiles));
+    }
+
+    // Return upload results
     echo json_encode([
         'success' => count($uploadedFiles) > 0,
         'files' => $uploadedFiles
@@ -73,14 +96,22 @@ function handleFileUpload() {
 }
 
 /**
- * 安全地提供文件访问
+ * Securely provide file access
  */
 function serveFile($fileParam) {
     global $config;
+    $isDebugMode = isset($config['system']['debug']) && $config['system']['debug'] === true;
+
+    if ($isDebugMode) {
+        error_log("serveFile entered. Requested file param: " . $fileParam);
+    }
     
-    $fileName = isset($_GET['file']) ? $_GET['file'] : '';
+    $fileName = isset($_GET['file']) ? $_GET['file'] : ''; // $fileParam seems unused, using $_GET directly as per original code
     
     if (empty($fileName) || !preg_match('/^uploaded_[a-zA-Z0-9]+_/', $fileName)) {
+        if ($isDebugMode) {
+            error_log("serveFile: Invalid or empty filename requested: '{$fileName}'");
+        }
         header('HTTP/1.0 404 Not Found');
         echo 'File not found';
         exit;
@@ -89,38 +120,45 @@ function serveFile($fileParam) {
     $filePath = $config['upload']['directory'] . '/' . $fileName;
     
     if (!file_exists($filePath)) {
+        if ($isDebugMode) {
+            error_log("serveFile: File not found at path: '{$filePath}'");
+        }
         header('HTTP/1.0 404 Not Found');
         echo 'File not found';
         exit;
     }
     
-    // 获取文件信息
+    // Get file information
     $fileInfo = pathinfo($filePath);
     $fileExt = strtolower($fileInfo['extension']);
     
-    // 设置内容类型
+    // Set content type
     $contentType = getContentTypeByExtension($fileExt);
     header('Content-Type: ' . $contentType);
     
-    // 设置内容长度
+    // Set content length
     $fileSize = filesize($filePath);
     header('Content-Length: ' . $fileSize);
     
-    // 设置下载头
+    // Set download headers
     $originalName = preg_replace('/^uploaded_[a-zA-Z0-9]+_/', '', $fileName);
     header('Content-Disposition: inline; filename="' . $originalName . '"');
     
-    // 输出文件
+    if ($isDebugMode) {
+        error_log("serveFile: Serving file '{$filePath}' with content type '{$contentType}' and original name '{$originalName}'.");
+    }
+
+    // Output the file
     readfile($filePath);
     exit;
 }
 
 /**
- * 根据扩展名获取MIME类型
+ * Get MIME type by extension
  */
 function getContentTypeByExtension($ext) {
     $mimeTypes = [
-        // 文本文件
+        // Text files
         'txt' => 'text/plain',
         'html' => 'text/html',
         'css' => 'text/css',
@@ -129,7 +167,7 @@ function getContentTypeByExtension($ext) {
         'xml' => 'application/xml',
         'md' => 'text/markdown',
         
-        // 图片
+        // Images
         'jpg' => 'image/jpeg',
         'jpeg' => 'image/jpeg',
         'png' => 'image/png',
@@ -138,7 +176,7 @@ function getContentTypeByExtension($ext) {
         'webp' => 'image/webp',
         'ico' => 'image/x-icon',
         
-        // 文档
+        // Documents
         'pdf' => 'application/pdf',
         'doc' => 'application/msword',
         'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -147,21 +185,21 @@ function getContentTypeByExtension($ext) {
         'ppt' => 'application/vnd.ms-powerpoint',
         'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         
-        // 归档文件
+        // Archive files
         'zip' => 'application/zip',
         'rar' => 'application/x-rar-compressed',
         '7z' => 'application/x-7z-compressed',
         'tar' => 'application/x-tar',
         'gz' => 'application/gzip',
         
-        // 音频/视频
+        // Audio/Video
         'mp3' => 'audio/mpeg',
         'mp4' => 'video/mp4',
         'webm' => 'video/webm',
         'ogg' => 'audio/ogg',
         'wav' => 'audio/wav',
         
-        // 字体
+        // Fonts
         'ttf' => 'font/ttf',
         'otf' => 'font/otf',
         'woff' => 'font/woff',
@@ -175,12 +213,12 @@ function getContentTypeByExtension($ext) {
 }
 
 /**
- * 清理文件名
+ * Sanitize filename
  */
 function sanitizeFileName($fileName) {
-    // 移除危险字符
+    // Remove dangerous characters
     $fileName = preg_replace('/[^\w\.\-]/i', '_', $fileName);
     
-    // 确保文件名唯一
+    // Return the sanitized filename
     return $fileName;
 }

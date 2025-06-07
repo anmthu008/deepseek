@@ -1,67 +1,70 @@
 <?php
 /**
- * DeepSeek Web接口 API处理程序
- * 负责处理前端请求、与DeepSeek API通信、对话记录管理
+ * DeepSeek Web Interface API Handler
+ * Responsible for handling front-end requests, communicating with the DeepSeek API, and managing conversation records
  */
 
-// 防止直接脚本执行
+// Prevent direct script execution
 define('DEEPSEEK_ACCESS', true);
 
-// 设置错误报告
+// Set error reporting
 ini_set('display_errors', 0);
 error_reporting(E_ALL);
 
-// 允许跨域请求
+// Allow cross-origin requests
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-// 如果是预检请求，直接返回成功
+// If it's a preflight request, return success directly
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// 加载配置
+// Load configuration
 $config = require_once __DIR__ . '/config.php';
 
-// 加载文件处理模块
+// Determine if debug mode is enabled
+$isDebugMode = isset($config['system']['debug']) && $config['system']['debug'] === true;
+
+// Load file handling module
 require_once __DIR__ . '/file_handler.php';
 
-// 设置时区
+// Set timezone
 date_default_timezone_set($config['system']['timezone']);
 
-// 创建必要的目录
+// Create necessary directories
 ensureDirectoriesExist([
     $config['upload']['directory'],
     $config['conversation']['directory']
 ]);
 
-// 获取当前用户ID（在实际应用中这里应该有认证逻辑）
+// Get current user ID (in a real application, there should be authentication logic here)
 $userId = $config['users']['default_user'];
 
-// 根据请求类型分发处理
+// Dispatch handling based on request type
 $requestType = isset($_GET['action']) ? $_GET['action'] : '';
 
-// 处理文件上传请求
+// Handle file upload requests
 if (isset($_FILES['files'])) {
     handleFileUpload();
     exit;
 }
 
-// 处理文件服务请求
+// Handle file serving requests
 if ($requestType === 'serve_file') {
     serveFile($_GET['file'] ?? '');
     exit;
 }
 
-// 处理JSON POST请求
+// Handle JSON POST requests
 $input = file_get_contents('php://input');
 $data = json_decode($input, true);
 
-// 如果有JSON数据，处理API请求
+// If there is JSON data, handle API request
 if ($data && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    // 根据action参数处理不同类型的请求
+    // Handle different types of requests based on the action parameter
     switch ($requestType) {
         case 'get_conversations':
             getConversations();
@@ -73,12 +76,12 @@ if ($data && $_SERVER['REQUEST_METHOD'] === 'POST') {
             deleteConversation(isset($data['conversation_id']) ? $data['conversation_id'] : '');
             break;
         default:
-            // 默认处理对话请求
+            // Default to handling chat requests
             handleChatRequest($data);
             break;
     }
 } else {
-    // 处理GET请求
+    // Handle GET requests
     switch ($requestType) {
         case 'get_conversations':
             getConversations();
@@ -93,57 +96,57 @@ if ($data && $_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 /**
- * 处理与DeepSeek API的聊天请求
+ * Handle chat requests with the DeepSeek API
  */
 function handleChatRequest($data) {
-    global $config, $userId;
+    global $config, $userId, $isDebugMode; // Added $isDebugMode
     
-    // 验证请求数据
+    // Validate request data
     if (!isset($data['messages']) || !is_array($data['messages'])) {
         returnError(400, 'Missing or invalid messages');
         return;
     }
     
-    // 提取请求参数
+    // Extract request parameters
     $messages = $data['messages'];
     $conversationId = isset($data['conversation_id']) ? $data['conversation_id'] : generateConversationId();
     $model = isset($data['model']) ? $data['model'] : $config['api']['models']['default'];
     
-    // 如果指定使用深度思考，切换到思考模型
+    // If deep thinking is specified, switch to the thinking model
     if (isset($data['deep_thinking']) && $data['deep_thinking']) {
         $model = $config['api']['models']['thinking'];
     }
     
-    // 合并API参数（使用配置默认值，允许请求覆盖部分参数）
+    // Merge API parameters (use configuration defaults, allow request to override some parameters)
     $temperature = isset($data['temperature']) ? $data['temperature'] : $config['api']['parameters']['temperature'];
     $maxTokens = isset($data['max_tokens']) ? $data['max_tokens'] : $config['api']['parameters']['max_tokens'];
     $topP = isset($data['top_p']) ? $data['top_p'] : $config['api']['parameters']['top_p'];
     $stream = isset($data['stream']) ? $data['stream'] : true;
     $tools = isset($data['tools']) ? $data['tools'] : null;
     
-    // 处理文件信息
+    // Process file information
     $fileInfo = [];
     if (isset($data['files']) && is_array($data['files'])) {
         $fileInfo = $data['files'];
         
-        // 将文件信息添加到消息中
-        $fileMessage = "我上传了以下文件：\n";
+        // Add file information to the message
+        $fileMessage = "I have uploaded the following files:\n"; // Translated
         foreach ($fileInfo as $file) {
             $fileMessage .= "- {$file['name']} ({$file['type']})\n";
         }
         
-        // 确保消息数组中包含文件信息
+        // Ensure the message array contains file information
         $foundUserMessage = false;
         foreach ($messages as $index => $message) {
             if ($message['role'] === 'user') {
-                // 检查最后一条用户消息是否已包含文件信息
+                // Check if the last user message already contains file information
                 if (!$foundUserMessage) {
                     $foundUserMessage = true;
                 }
             }
         }
         
-        // 如果没有找到用户消息或最后一条消息不包含文件信息，添加文件信息
+        // If no user message is found or the last message does not contain file information, add file information
         if (!$foundUserMessage) {
             $messages[] = [
                 'role' => 'user',
@@ -152,7 +155,7 @@ function handleChatRequest($data) {
         }
     }
     
-    // 准备发送到DeepSeek的数据
+    // Prepare data to be sent to DeepSeek
     $requestData = [
         'model' => $model,
         'messages' => $messages,
@@ -162,57 +165,67 @@ function handleChatRequest($data) {
         'stream' => $stream
     ];
     
-    // 如果有工具配置，添加到请求中
+    // If there is tool configuration, add it to the request
     if ($tools !== null) {
         $requestData['tools'] = $tools;
     }
+
+    if ($isDebugMode) {
+        $loggableRequestData = $requestData;
+        // Intentionally not redacting Authorization header for DeepSeek as it's a direct API call,
+        // but if this were a user-provided key, redaction would be critical.
+        // For this specific DeepSeek API, the key is already in $config, not user input.
+        error_log("Request to DeepSeek API: Model - {$loggableRequestData['model']}, Messages Count - " . count($loggableRequestData['messages']));
+        // To log full messages (can be verbose):
+        // error_log("Request Messages: " . json_encode($loggableRequestData['messages']));
+    }
     
-    // 保存请求消息到对话历史
+    // Save request message to conversation history
     saveConversationMessage($userId, $conversationId, $messages, array_merge([
         'model' => $model,
         'deep_thinking' => isset($data['deep_thinking']) ? $data['deep_thinking'] : false,
         'files' => $fileInfo
     ], $requestData));
     
-    // 设置curl选项
+    // Set curl options
     $ch = curl_init($config['api']['url']);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestData));
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Content-Type: application/json',
-        'Authorization: Bearer ' . $config['api']['key']
+        'Authorization: Bearer ' . $config['api']['key'] // Actual key here
     ]);
     
-    // 如果是流式响应
-    // 替换handleChatRequest函数中的流式输出部分
+    // If it's a streaming response
+    // Replace the streaming output part in the handleChatRequest function
 if ($stream) {
-    // 设置合适的头部
+    // Set appropriate headers
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
     header('Connection: keep-alive');
     
-    // 禁用输出缓冲
+    // Disable output buffering
     if (ob_get_level()) ob_end_clean();
     
-    // 关闭输出压缩
+    // Disable output compression
     ini_set('zlib.output_compression', 0);
     ini_set('output_buffering', 0);
     
-    // 发送初始空白数据以启动连接
+    // Send initial blank data to start the connection
     echo "retry: 1000\n\n";
     flush();
     
-    // 记录响应内容
+    // Record response content
     $responseContent = '';
     
-    // 设置curl选项，确保更小的数据块和更频繁的输出
-    curl_setopt($ch, CURLOPT_BUFFERSIZE, 128); // 减小缓冲区大小
+    // Set curl options to ensure smaller data chunks and more frequent output
+    curl_setopt($ch, CURLOPT_BUFFERSIZE, 128); // Reduce buffer size
     curl_setopt($ch, CURLOPT_WRITEFUNCTION, function($curl, $data) use (&$responseContent) {
         $responseContent .= $data;
         
-        // 拆分数据，确保更细粒度的输出
-        $chunks = str_split($data, 1); // 每个字符单独发送
+        // Split data to ensure finer-grained output
+        $chunks = str_split($data, 1); // Send each character individually
         foreach($chunks as $chunk) {
             echo $chunk;
             flush();
@@ -221,18 +234,59 @@ if ($stream) {
         return strlen($data);
     });
     
-    // 执行请求
-    curl_exec($ch);
+    // Execute request
+    $executionResult = curl_exec($ch);
+
+    // Specifically check if curl_exec failed
+    if ($executionResult === false) {
+        $curlError = curl_error($ch);
+        $curlErrNo = curl_errno($ch);
+        error_log("cURL execution failed directly. Errno: $curlErrNo, Error: $curlError");
+        if ($isDebugMode) {
+            // Ensure headers are still set for event-stream before echoing error
+            // This check might be redundant if headers are always set before this point,
+            // but it's a safeguard.
+            if (!headers_sent()) {
+                header('Content-Type: text/event-stream');
+                header('Cache-Control: no-cache');
+                header('Connection: keep-alive');
+                if (ob_get_level()) ob_end_clean(); // Ensure no buffering
+                ini_set('zlib.output_compression', 0);
+                ini_set('output_buffering', 0);
+                echo "retry: 1000\n\n"; // Keep connection alive for client to receive error
+                flush();
+            }
+            echo "data: " . json_encode([
+                'error' => 'API request execution failed on server.',
+                'details' => "cURL Error ($curlErrNo): $curlError. Check server logs."
+            ]) . "\n\n";
+            echo "data: [DONE]\n\n"; // Ensure stream termination
+            flush();
+        }
+        // No further processing of assistant message if exec failed
+        // curl_close($ch) will be handled in the finally block or end of function
+        return; // Exit function since the request fundamentally failed
+    }
     
-    // 检查错误
+    // Existing check for curl_errno (could be set even if $executionResult is not false, e.g. HTTP errors)
     if (curl_errno($ch)) {
-        http_response_code(500);
-        echo "data: " . json_encode(['error' => curl_error($ch)]) . "\n\n";
+        $curlError = curl_error($ch);
+        error_log("cURL Error (post-execution check): " . $curlError); // Clarified log
+        if ($isDebugMode) {
+            echo "data: " . json_encode(['error' => 'cURL Error: ' . $curlError, 'details' => 'Check server logs for more info.']) . "\n\n";
+            echo "data: [DONE]\n\n"; // Ensure stream termination
+            flush();
+        }
+        // No further processing if there's a curl error.
+        return;
     } else {
-        // 解析流式响应，提取完整消息内容
+        if ($isDebugMode) {
+            error_log("Raw API Response (Stream): " . $responseContent);
+        }
+        // Parse streaming response to extract full message content
         $assistantMessage = extractAssistantMessage($responseContent);
         if ($assistantMessage) {
-            // 保存AI响应到对话历史
+            // Save AI response to conversation history
             $assistantData = [
                 'role' => 'assistant',
                 'content' => $assistantMessage
@@ -240,18 +294,48 @@ if ($stream) {
             appendConversationMessage($userId, $conversationId, $assistantData);
         }
         
-        // 确保结束标记被发送
+        // Ensure the end marker is sent
         echo "data: [DONE]\n\n";
         flush();
     }
+} else { // Non-streaming response
+    $responseContent = curl_exec($ch);
+    if (curl_errno($ch)) {
+        $curlError = curl_error($ch);
+        error_log("cURL Error (Non-Stream): " . $curlError);
+        returnError(500, 'API request failed', $isDebugMode ? ['curl_error' => $curlError] : null);
+        curl_close($ch);
+        return;
+    }
+    if ($isDebugMode) {
+        error_log("Raw API Response (Non-Stream): " . $responseContent);
+    }
+    $responseData = json_decode($responseContent, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("Failed to decode API JSON response: " . json_last_error_msg());
+        returnError(500, 'Invalid API response format', $isDebugMode ? ['json_error' => json_last_error_msg(), 'raw_response' => $responseContent] : null);
+        curl_close($ch);
+        return;
+    }
+
+    // Assuming non-stream response structure is similar for messages
+    $assistantMessage = $responseData['choices'][0]['message']['content'] ?? null;
+    if ($assistantMessage) {
+        $assistantData = [
+            'role' => 'assistant',
+            'content' => $assistantMessage
+        ];
+        appendConversationMessage($userId, $conversationId, $assistantData);
+    }
+    echo json_encode($responseData); // Send the full response back for non-streaming
 }
     
-    // 关闭curl
+    // Close curl
     curl_close($ch);
 }
 
 /**
- * 获取用户的所有对话
+ * Get all conversations for the user
  */
 function getConversations() {
     global $config, $userId;
@@ -267,14 +351,14 @@ function getConversations() {
             $data = json_decode(file_get_contents($file), true);
             
             if ($data) {
-                // 提取对话标题和时间
-                $title = isset($data['title']) ? $data['title'] : '新对话';
+                // Extract conversation title and time
+                $title = isset($data['title']) ? $data['title'] : 'New Conversation'; // Translated
                 $created = isset($data['created_at']) ? $data['created_at'] : filemtime($file);
                 $updated = isset($data['updated_at']) ? $data['updated_at'] : filemtime($file);
                 
-                // 如果没有标题，尝试从第一条消息生成
-                if ($title === '新对话' && isset($data['messages'][0]['content'])) {
-                    // 使用用户的第一条消息作为标题
+                // If there is no title, try to generate it from the first message
+                if ($title === 'New Conversation' && isset($data['messages'][0]['content'])) { // Translated
+                    // Use the user's first message as the title
                     foreach ($data['messages'] as $message) {
                         if ($message['role'] === 'user') {
                             $title = mb_substr($message['content'], 0, 30) . (mb_strlen($message['content']) > 30 ? '...' : '');
@@ -294,12 +378,12 @@ function getConversations() {
         }
     }
     
-    // 按更新时间排序
+    // Sort by update time
     usort($conversations, function($a, $b) {
         return $b['updated_at'] - $a['updated_at'];
     });
     
-    // 返回对话列表
+    // Return conversation list
     echo json_encode([
         'success' => true,
         'conversations' => $conversations
@@ -307,7 +391,7 @@ function getConversations() {
 }
 
 /**
- * 获取特定对话的详细信息
+ * Get detailed information for a specific conversation
  */
 function getConversation($conversationId) {
     global $config, $userId;
@@ -331,7 +415,7 @@ function getConversation($conversationId) {
         return;
     }
     
-    // 返回对话数据
+    // Return conversation data
     echo json_encode([
         'success' => true,
         'conversation' => $data
@@ -339,7 +423,7 @@ function getConversation($conversationId) {
 }
 
 /**
- * 删除特定对话
+ * Delete a specific conversation
  */
 function deleteConversation($conversationId) {
     global $config, $userId;
@@ -367,28 +451,39 @@ function deleteConversation($conversationId) {
 }
 
 /**
- * 保存对话消息
+ * Save conversation message
  */
 function saveConversationMessage($userId, $conversationId, $messages, $metadata = []) {
-    global $config;
+    global $config, $isDebugMode; // Added $isDebugMode
     
     $userDir = $config['conversation']['directory'] . '/' . $userId;
     
-    // 确保用户目录存在
+    // Ensure user directory exists
     if (!is_dir($userDir)) {
-        mkdir($userDir, 0755, true);
+        if (!mkdir($userDir, 0755, true) && !is_dir($userDir)) {
+            // Log error if directory creation fails
+            error_log("Failed to create directory: " . $userDir);
+            // Potentially throw an exception or return an error if critical
+        }
     }
     
     $conversationFile = $userDir . '/' . $conversationId . '.json';
     $now = time();
     
-    // 创建或更新对话文件
+    // Create or update conversation file
     if (file_exists($conversationFile)) {
-        $data = json_decode(file_get_contents($conversationFile), true);
+        $currentContent = file_get_contents($conversationFile);
+        if ($currentContent === false && $isDebugMode) {
+            error_log("Failed to read existing conversation file: " . $conversationFile);
+        }
+        $data = json_decode($currentContent, true);
         if (!$data) {
+            if ($isDebugMode && $currentContent !== '' && $currentContent !== null) { // Avoid logging for new/empty files
+                error_log("Failed to decode JSON from conversation file: " . $conversationFile . " - Error: " . json_last_error_msg());
+            }
             $data = [
                 'id' => $conversationId,
-                'title' => '新对话',
+                'title' => 'New Conversation',
                 'created_at' => $now,
                 'updated_at' => $now,
                 'messages' => [],
@@ -398,7 +493,7 @@ function saveConversationMessage($userId, $conversationId, $messages, $metadata 
     } else {
         $data = [
             'id' => $conversationId,
-            'title' => '新对话',
+            'title' => 'New Conversation',
             'created_at' => $now,
             'updated_at' => $now,
             'messages' => [],
@@ -406,13 +501,13 @@ function saveConversationMessage($userId, $conversationId, $messages, $metadata 
         ];
     }
     
-    // 更新元数据
+    // Update metadata
     $data['metadata'] = array_merge($data['metadata'], $metadata);
     $data['updated_at'] = $now;
     
-    // 如果是新对话，提取第一条用户消息作为标题
-    if ($data['title'] === '新对话' && !empty($messages)) {
-        // 查找第一条用户消息
+    // If it's a new conversation, extract the first user message as the title
+    if ($data['title'] === 'New Conversation' && !empty($messages)) { // Translated
+        // Find the first user message
         foreach ($messages as $message) {
             if ($message['role'] === 'user') {
                 $data['title'] = mb_substr($message['content'], 0, 30) . (mb_strlen($message['content']) > 30 ? '...' : '');
@@ -421,7 +516,7 @@ function saveConversationMessage($userId, $conversationId, $messages, $metadata 
         }
     }
     
-    // 保存所有新消息
+    // Save all new messages
     foreach ($messages as $message) {
         if (!isset($message['timestamp'])) {
             $message['timestamp'] = $now;
@@ -429,23 +524,33 @@ function saveConversationMessage($userId, $conversationId, $messages, $metadata 
         $data['messages'][] = $message;
     }
     
-    // 写入文件
-    file_put_contents($conversationFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    // Write to file
+    $jsonData = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    if (file_put_contents($conversationFile, $jsonData) === false) {
+        error_log("Failed to write to conversation file: " . $conversationFile);
+    } elseif ($isDebugMode) {
+        error_log("Saved conversation message to: " . $conversationFile . " - Data: " . $jsonData);
+    }
     
     return $conversationId;
 }
 
 /**
- * 向现有对话添加单条消息
+ * Add a single message to an existing conversation
  */
 function appendConversationMessage($userId, $conversationId, $message) {
-    global $config;
+    global $config, $isDebugMode; // Added $isDebugMode
     
     $userDir = $config['conversation']['directory'] . '/' . $userId;
     $conversationFile = $userDir . '/' . $conversationId . '.json';
     
     if (file_exists($conversationFile)) {
-        $data = json_decode(file_get_contents($conversationFile), true);
+        $currentContent = file_get_contents($conversationFile);
+        if ($currentContent === false && $isDebugMode) {
+            error_log("Failed to read existing conversation file for append: " . $conversationFile);
+        }
+        $data = json_decode($currentContent, true);
+
         if ($data) {
             if (!isset($message['timestamp'])) {
                 $message['timestamp'] = time();
@@ -453,49 +558,82 @@ function appendConversationMessage($userId, $conversationId, $message) {
             $data['messages'][] = $message;
             $data['updated_at'] = time();
             
-            file_put_contents($conversationFile, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+            $jsonData = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+            if (file_put_contents($conversationFile, $jsonData) === false) {
+                error_log("Failed to append to conversation file: " . $conversationFile);
+            } elseif ($isDebugMode) {
+                error_log("Appended message to: " . $conversationFile . " - Message: " . json_encode($message));
+            }
             return true;
+        } elseif ($isDebugMode && $currentContent !== '' && $currentContent !== null) {
+             error_log("Failed to decode JSON for append from conversation file: " . $conversationFile . " - Error: " . json_last_error_msg());
         }
+    } elseif ($isDebugMode) {
+        error_log("Conversation file not found for append: " . $conversationFile);
     }
     
     return false;
 }
 
 /**
- * 从SSE流响应中提取完整的助手消息
+ * Extract the complete assistant message from the SSE stream response
  */
 function extractAssistantMessage($responseContent) {
+    global $isDebugMode; // Added $isDebugMode
     $content = '';
+
+    if ($isDebugMode) {
+        error_log("extractAssistantMessage received: " . $responseContent);
+    }
+
     $lines = explode("\n", $responseContent);
     
     foreach ($lines as $line) {
+        if ($isDebugMode) {
+            error_log("Processing line: " . $line);
+        }
         if (strpos($line, 'data: ') === 0) {
             $data = substr($line, 6);
             if ($data === '[DONE]') continue;
             
             try {
                 $json = json_decode($data, true);
+                if (json_last_error() !== JSON_ERROR_NONE) {
+                    if ($isDebugMode) {
+                        error_log("JSON decode error: " . json_last_error_msg() . " for data: " . $data);
+                    }
+                    continue; // Skip malformed JSON
+                }
+                if ($isDebugMode) {
+                    error_log("Decoded JSON: " . print_r($json, true));
+                }
                 if (isset($json['choices'][0]['delta']['content'])) {
                     $content .= $json['choices'][0]['delta']['content'];
                 }
             } catch (Exception $e) {
-                // 解析错误，跳过
+                if ($isDebugMode) {
+                    error_log("Exception during JSON decode or processing: " . $e->getMessage() . " for data: " . $data);
+                }
+                // Parsing error, skip
             }
         }
     }
     
+    if ($isDebugMode) {
+        error_log("extractAssistantMessage returning: " . $content);
+    }
     return $content;
 }
 
 /**
- * 生成唯一的对话ID
+ * Generate a unique conversation ID
  */
 function generateConversationId() {
     return uniqid() . '-' . substr(md5(uniqid(mt_rand(), true)), 0, 8);
 }
 
 /**
- * 确保所需目录存在
+ * Ensure required directories exist
  */
 function ensureDirectoriesExist($directories) {
     foreach ($directories as $dir) {
@@ -506,10 +644,23 @@ function ensureDirectoriesExist($directories) {
 }
 
 /**
- * 返回错误信息
+ * Return error message
  */
-function returnError($code, $message) {
+function returnError($code, $message, $debugInfo = null) {
+    global $isDebugMode;
     http_response_code($code);
-    echo json_encode(['error' => $message]);
+
+    $errorData = ['error' => $message];
+    if ($isDebugMode && $debugInfo !== null) {
+        $errorData['debug_info'] = $debugInfo;
+    }
+
+    $logMessage = "Error {$code}: {$message}";
+    if ($debugInfo) {
+        $logMessage .= " - Debug Info: " . json_encode($debugInfo);
+    }
+    error_log($logMessage);
+
+    echo json_encode($errorData);
     exit;
 }

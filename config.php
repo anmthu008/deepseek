@@ -1,66 +1,66 @@
 <?php
 /**
- * DeepSeek API配置文件
- * 包含API密钥和端点URL等敏感信息
+ * DeepSeek API Configuration File
+ * Contains sensitive information such as API key and endpoint URL
  */
 
 
-// 防止直接访问
+// Prevent direct access
 if (!defined('DEEPSEEK_ACCESS')) {
     die('Direct access not permitted');
 }
 
 return [
-    // API配置
+    // API Configuration
     'api' => [
-        'key' => 'sk-148a849ede56455ab2602db661ea9f42', // 替换为实际的DeepSeek API密钥
-        'url' => 'https://api.deepseek.com/v1/chat/completions', // DeepSeek API端点
+        'key' => 'sk-148a849ede56455ab2602db661ea9f42', // Replace with your actual DeepSeek API key
+        'url' => 'https://api.deepseek.com/v1/chat/completions', // DeepSeek API endpoint
         'models' => [
-            'default' => 'deepseek-chat', // 默认模型
-            'thinking' => 'deepseek-reasoner' // 深度思考模型
+            'default' => 'deepseek-chat', // Default model
+            'thinking' => 'deepseek-reasoner' // Deep thinking model
         ],
         'parameters' => [
-            'temperature' => 0.1,  // 默认温度
-            'max_tokens' => 20000,  // 默认最大token数
-            'top_p' => 0.9,        // 默认top_p值
+            'temperature' => 0.1,  // Default temperature
+            'max_tokens' => 20000,  // Default maximum tokens
+            'top_p' => 0.9,        // Default top_p value
         ]
     ],
     
-    // 文件上传配置
+    // File upload configuration
     'upload' => [
         'max_file_size' => 100 * 1024 * 1024, // 100MB
         'allowed_types' => [
-            // 文档
+            // Documents
             'pdf', 'doc', 'docx', 'txt', 'rtf', 'odt', 'md',
-            // 表格
+            // Spreadsheets
             'xls', 'xlsx', 'csv',
-            // 演示文稿
+            // Presentations
             'ppt', 'pptx',
-            // 图片
+            // Images
             'jpg', 'jpeg', 'png', 'gif', 'webp', 'svg',
-            // 代码文件
+            // Code files
             'json', 'xml', 'html', 'css', 'js', 'php', 'py', 'java', 'c', 'cpp', 'h'
         ],
         'directory' => __DIR__ . '/uploads',
     ],
     
-    // 对话记录配置
+    // Conversation history configuration
     'conversation' => [
         'directory' => __DIR__ . '/conversations',
-        'max_history' => 100 // 每个用户存储的最大对话数
+        'max_history' => 100 // Maximum number of conversations stored per user
     ],
     
-    // 用户配置
+    // User configuration
     'users' => [
-        'use_authentication' => false, // 是否启用用户认证
-        'default_user' => 'anonymous', // 默认用户ID
+        'use_authentication' => false, // Whether to enable user authentication
+        'default_user' => 'anonymous', // Default user ID
     ],
     
-    // 系统配置
+    // System configuration
     'system' => [
-        'debug' => false, // 调试模式
-        'timezone' => 'Asia/Shanghai', // 时区设置
-        'version' => '1.0.0', // 应用版本
+        'debug' => false, // Debug mode
+        'timezone' => 'Asia/Shanghai', // Timezone setting
+        'version' => '1.0.0', // Application version
     ]
 ];
 ?>
